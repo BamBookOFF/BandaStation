@@ -36,7 +36,7 @@
 			return FALSE
 		polled_friend_count = how_many
 
-		var/confirm_ghosts = tgui_alert(user, "Вы уверены, что хотите предложить это призракам?", "Подтверждение", list("Да", "Отмена"))
+		var/confirm_ghosts = tgui_alert(user, "Вы уверены, что хотите предложить роль призракам?", "Подтверждение", list("Да", "Отмена"))
 		if(confirm_ghosts != "Да")
 			return FALSE
 

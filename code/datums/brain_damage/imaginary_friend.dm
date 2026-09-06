@@ -21,7 +21,6 @@
 	if(M.stat == DEAD || !M.client)
 		return FALSE
 	. = ..()
-	// Мы больше не создаем друга здесь! Только ищем призрака.
 	get_ghost()
 
 /datum/brain_trauma/special/imaginary_friend/on_life(seconds_per_tick)
@@ -47,7 +46,6 @@
 		return
 	friend_initialized = FALSE
 	QDEL_NULL(friend)
-	// Здесь тоже больше не создаем друга заранее
 	get_ghost()
 
 /datum/brain_trauma/special/imaginary_friend/proc/make_friend()
@@ -75,7 +73,6 @@
 	// Запускаем асинхронный опрос призрака
 	INVOKE_ASYNC(src, PROC_REF(ask_ghost_appearance), ghost)
 
-// НОВЫЙ ПРОК: Спрашиваем призрака, пока он еще призрак
 /datum/brain_trauma/special/imaginary_friend/proc/ask_ghost_appearance(mob/dead/observer/ghost)
 	if(!ghost || !ghost.client)
 		return
@@ -83,7 +80,6 @@
 	var/list/choices = list("Свой персонаж", "Случайный человек", "Выбрать из окружающих")
 	var/choice = tgui_alert(ghost, "Кем вы хотите выглядеть?", "Внешний вид", choices)
 
-	// Проверяем, не отключился ли призрак и жив ли хозяин, пока мы ждали ответа
 	if(!ghost || !ghost.client || QDELETED(src) || QDELETED(owner))
 		return
 
@@ -105,16 +101,13 @@
 			else
 				choice = "Случайный человек"
 
-	// Ещё одна проверка после второго окна
 	if(!ghost || !ghost.client || QDELETED(src) || QDELETED(owner))
 		return
 
-	// ТОЛЬКО ТЕПЕРЬ СОЗДАЕМ МОБА ВООБРАЖАЕМОГО ДРУГА
 	make_friend()
 	friend.PossessByPlayer(ghost.ckey)
 	friend.attach_to_owner(owner)
 
-	// Применяем выбранную внешность
 	if(choice == "Свой персонаж")
 		friend.setup_friend_from_prefs(ghost.client.prefs)
 	else if(choice == "Выбрать из окружающих" && copied_target)
@@ -484,39 +477,32 @@
 	remove_typing_indicator()
 
 /mob/eye/imaginary_friend/Move(atom/NewLoc, Dir = 0)
-	// 1. Проверяем скорость задержки шага
 	if(world.time < move_delay)
 		return FALSE
 
-	// 2. СНАЧАЛА поворачиваемся (даже если впереди стена)
 	if(Dir)
 		setDir(Dir)
 
-	// 3. Симулируем физику, если друг видимый
 	if(!hidden && NewLoc)
 		if(NewLoc.density)
-			return FALSE // Врезаемся в стену, но уже повернувшись!
+			return FALSE
 
-		// Проверяем объекты на клетке (например, закрытые шлюзы)
 		for(var/atom/A in NewLoc.contents)
 			if(A.density && A != src)
 				if(istype(A, /obj/machinery/door))
 					var/obj/machinery/door/D = A
-					if(D.density) // Если дверь закрыта
+					if(D.density)
 						return FALSE
 				else
-					return FALSE // Упираемся в любой другой плотный объект
+					return FALSE
 
-	// 4. Проверка дистанции до хозяина
 	if(get_dist(src, owner) > distance_allowance || (require_los && !can_see(owner, src, distance_allowance)))
 		recall()
 		move_delay = world.time + 10
 		return FALSE
 
-	// 5. Само перемещение
 	abstract_move(NewLoc)
 
-	// 6. Обновляем скорость в зависимости от режима
 	if(hidden)
 		move_delay = world.time + 1
 	else

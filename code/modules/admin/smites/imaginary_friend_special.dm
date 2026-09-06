@@ -177,7 +177,6 @@
 	)
 	friend_mob.attach_to_owner(target)
 
-	// Применяем выбранную внешность
 	if(choice == "Свой персонаж")
 		friend_mob.setup_friend_from_prefs(friend_candidate_client.prefs)
 	else if(choice == "Выбрать из окружающих" && copied_target)
